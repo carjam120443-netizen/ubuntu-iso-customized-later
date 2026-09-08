@@ -1,0 +1,15 @@
+#!/bin/sh
+set -e
+
+# live-build can encounter Ubuntu's temporary dangling kernel symlinks.
+# Remove only links whose targets do not exist; keep valid kernel links intact.
+for link in \
+  /boot/initrd.img \
+  /boot/initrd.img.old \
+  /boot/vmlinuz \
+  /boot/vmlinuz.old
+ do
+  if [ -L "$link" ] && [ ! -e "$link" ]; then
+    rm -f "$link"
+  fi
+done
