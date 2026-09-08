@@ -1,25 +1,28 @@
-# Applications installed from the Ubuntu repositories
+# Core packages for the custom Ubuntu live image
+# Keep this list to packages available in Ubuntu 24.04 (Noble).
 # One package per line.
 
-# Boot-critical packages
+# Boot and live-system support
 linux-image-generic
 initramfs-tools
+live-boot
+live-config
 
-# Web browser
-firefox
+# Syslinux live-build support
+syslinux
+syslinux-common
+librsvg2-bin
 
 # Development and Git tools
 git
 curl
 wget
 
-# System utilities
+# System monitoring and utilities
 htop
 neofetch
+net-tools
 
-# Archive and file utilities
+# Archive utilities
 zip
 unzip
-
-# Networking utility
-net-tools
