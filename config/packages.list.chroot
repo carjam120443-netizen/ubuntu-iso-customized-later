@@ -1,6 +1,21 @@
-# Add packages here later, one package per line.
-# Example:
-# curl
-# git
-# vim
-# htop
+# Applications installed from the Ubuntu repositories
+# One package per line.
+
+# Web browser
+firefox
+
+# Development and Git tools
+git
+curl
+wget
+
+# System utilities
+htop
+neofetch
+
+# Archive and file utilities
+zip
+unzip
+
+# Networking utility
+net-tools
