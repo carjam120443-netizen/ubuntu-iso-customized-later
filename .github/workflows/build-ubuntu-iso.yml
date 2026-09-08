@@ -13,6 +13,7 @@ permissions:
 
 env:
   UBUNTU_CODENAME: noble
+  UBUNTU_MIRROR: http://archive.ubuntu.com/ubuntu
   ISO_NAME: carson-ubuntu-custom
 
 jobs:
@@ -34,8 +35,6 @@ jobs:
             squashfs-tools \
             grub-pc-bin \
             grub-efi-amd64-bin \
-            grub-efi-amd64-signed \
-            shim-signed \
             mtools \
             dosfstools
 
@@ -48,6 +47,9 @@ jobs:
           lb config \
             --distribution "${UBUNTU_CODENAME}" \
             --archive-areas "main restricted universe multiverse" \
+            --mirror-bootstrap "${UBUNTU_MIRROR}" \
+            --mirror-chroot "${UBUNTU_MIRROR}" \
+            --mirror-binary "${UBUNTU_MIRROR}" \
             --debian-installer false \
             --binary-images iso-hybrid \
             --bootappend-live "boot=live components username=carson hostname=carson-ubuntu" \
@@ -80,7 +82,7 @@ jobs:
         run: |
           sudo lb build
 
-      - name: Rename ISO
+      - name: Rename ISO and generate checksum
         run: |
           ISO=$(find build -maxdepth 1 -type f -name '*.iso' -print -quit)
           test -n "$ISO"
