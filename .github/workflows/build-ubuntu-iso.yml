@@ -35,6 +35,7 @@ jobs:
             squashfs-tools \
             syslinux \
             syslinux-common \
+            isolinux \
             grub-pc-bin \
             grub-efi-amd64-bin \
             mtools \
@@ -60,6 +61,13 @@ jobs:
             --bootappend-live "boot=live components username=carson hostname=carson-ubuntu" \
             --apt-recommends true \
             --memtest none
+
+      - name: Verify Syslinux files
+        run: |
+          set -eux
+          dpkg -L isolinux | grep -E '/isolinux\.bin$' || true
+          dpkg -L syslinux-common | grep -E '/vesamenu\.c32$' || true
+          find /usr/lib/syslinux /usr/share/syslinux /usr/lib/ISOLINUX -type f \( -name 'isolinux.bin' -o -name 'vesamenu.c32' \) -print 2>/dev/null || true
 
       - name: Add customizable package list
         run: |
