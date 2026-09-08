@@ -19,7 +19,7 @@ env:
 jobs:
   build-iso:
     runs-on: ubuntu-24.04
-    timeout-minutes: 45
+    timeout-minutes: 60
 
     steps:
       - name: Check out repository
@@ -67,6 +67,7 @@ jobs:
         run: |
           mkdir -p build/config/hooks/live
           if [ -d config/hooks ]; then
+            find config/hooks -type f -name '*.hook.chroot' -exec chmod +x {} +
             cp -a config/hooks/. build/config/hooks/live/
           fi
 
@@ -81,6 +82,11 @@ jobs:
         working-directory: build
         run: |
           sudo lb build
+
+      - name: Verify generated initramfs and ISO
+        run: |
+          test -f build/chroot/boot/vmlinuz || true
+          find build -maxdepth 2 -type f \( -name 'vmlinuz*' -o -name 'initrd*' -o -name '*.iso' \) -ls || true
 
       - name: Rename ISO and generate checksum
         run: |
