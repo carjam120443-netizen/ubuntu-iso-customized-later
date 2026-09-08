@@ -1,6 +1,10 @@
 # Applications installed from the Ubuntu repositories
 # One package per line.
 
+# Boot-critical packages
+linux-image-generic
+initramfs-tools
+
 # Web browser
 firefox
 
