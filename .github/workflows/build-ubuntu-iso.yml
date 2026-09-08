@@ -52,8 +52,10 @@ jobs:
             --mirror-binary "${UBUNTU_MIRROR}" \
             --debian-installer false \
             --binary-images iso-hybrid \
+            --linux-packages "linux-image-generic" \
+            --linux-flavours generic \
             --bootappend-live "boot=live components username=carson hostname=carson-ubuntu" \
-            --apt-recommends false \
+            --apt-recommends true \
             --memtest none
 
       - name: Add customizable package list
@@ -83,7 +85,7 @@ jobs:
         run: |
           sudo lb build
 
-      - name: Verify generated initramfs and ISO
+      - name: Verify generated kernel and ISO
         run: |
           test -f build/chroot/boot/vmlinuz || true
           find build -maxdepth 2 -type f \( -name 'vmlinuz*' -o -name 'initrd*' -o -name '*.iso' \) -ls || true
