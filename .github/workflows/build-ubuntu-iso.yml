@@ -33,6 +33,8 @@ jobs:
             debootstrap \
             xorriso \
             squashfs-tools \
+            syslinux \
+            syslinux-common \
             grub-pc-bin \
             grub-efi-amd64-bin \
             mtools \
@@ -45,6 +47,8 @@ jobs:
           cd build
 
           lb config \
+            --mode ubuntu \
+            --architecture amd64 \
             --distribution "${UBUNTU_CODENAME}" \
             --archive-areas "main restricted universe multiverse" \
             --mirror-bootstrap "${UBUNTU_MIRROR}" \
@@ -52,6 +56,7 @@ jobs:
             --mirror-binary "${UBUNTU_MIRROR}" \
             --debian-installer false \
             --binary-images iso-hybrid \
+            --syslinux-theme live-build \
             --bootappend-live "boot=live components username=carson hostname=carson-ubuntu" \
             --apt-recommends true \
             --memtest none
@@ -78,9 +83,15 @@ jobs:
             cp -a config/includes.chroot/. build/config/includes.chroot/
           fi
 
+      - name: Validate package list
+        run: |
+          echo 'Packages requested by the custom image:'
+          sed '/^[[:space:]]*#/d;/^[[:space:]]*$/d' config/packages.list.chroot | sort -u
+
       - name: Build ISO
         working-directory: build
         run: |
+          sudo lb clean --purge
           sudo lb build
 
       - name: Verify generated kernel and ISO
