@@ -41,6 +41,18 @@ jobs:
             mtools \
             dosfstools
 
+      - name: Prepare Syslinux files for live-build
+        run: |
+          set -eux
+          # Ubuntu Noble's live-build expects these legacy paths on the host.
+          # The files are shipped with live-build itself.
+          sudo mkdir -p /root/isolinux
+          sudo cp /usr/share/live/build/bootloaders/isolinux/isolinux.bin /root/isolinux/isolinux.bin
+          sudo cp /usr/share/live/build/bootloaders/isolinux/vesamenu.c32 /root/isolinux/vesamenu.c32
+          test -f /root/isolinux/isolinux.bin
+          test -f /root/isolinux/vesamenu.c32
+          ls -lh /root/isolinux/isolinux.bin /root/isolinux/vesamenu.c32
+
       - name: Prepare live-build configuration
         run: |
           rm -rf build
@@ -68,6 +80,8 @@ jobs:
           dpkg -L isolinux | grep -E '/isolinux\.bin$' || true
           dpkg -L syslinux-common | grep -E '/vesamenu\.c32$' || true
           find /usr/lib/syslinux /usr/share/syslinux /usr/lib/ISOLINUX -type f \( -name 'isolinux.bin' -o -name 'vesamenu.c32' \) -print 2>/dev/null || true
+          test -f /root/isolinux/isolinux.bin
+          test -f /root/isolinux/vesamenu.c32
 
       - name: Add customizable package list
         run: |
