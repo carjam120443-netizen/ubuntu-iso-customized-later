@@ -1,0 +1,16 @@
+#!/bin/sh
+set -eu
+
+# live-build can leave temporary kernel symlinks behind while Ubuntu's
+# kernel packages are being configured. Remove only links whose targets
+# do not exist so the later live-build chmod/cleanup stage does not fail.
+for link in \
+  /boot/initrd.img \
+  /boot/initrd.img.old \
+  /boot/vmlinuz \
+  /boot/vmlinuz.old
+ do
+  if [ -L "$link" ] && [ ! -e "$link" ]; then
+    rm -f "$link"
+  fi
+done
