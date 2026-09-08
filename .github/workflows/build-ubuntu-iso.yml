@@ -1,0 +1,99 @@
+name: Build Custom Ubuntu ISO
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'config/**'
+      - '.github/workflows/build-ubuntu-iso.yml'
+
+permissions:
+  contents: read
+
+env:
+  UBUNTU_CODENAME: noble
+  ISO_NAME: carson-ubuntu-custom
+
+jobs:
+  build-iso:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install ISO build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            live-build \
+            debootstrap \
+            xorriso \
+            squashfs-tools \
+            grub-pc-bin \
+            grub-efi-amd64-bin \
+            grub-efi-amd64-signed \
+            shim-signed \
+            mtools \
+            dosfstools
+
+      - name: Prepare live-build configuration
+        run: |
+          rm -rf build
+          mkdir -p build
+          cd build
+
+          lb config \
+            --distribution "${UBUNTU_CODENAME}" \
+            --archive-areas "main restricted universe multiverse" \
+            --debian-installer false \
+            --binary-images iso-hybrid \
+            --bootappend-live "boot=live components username=carson hostname=carson-ubuntu" \
+            --apt-recommends false \
+            --memtest none
+
+      - name: Add customizable package list
+        run: |
+          mkdir -p build/config/package-lists
+          if [ -f config/packages.list.chroot ]; then
+            cp config/packages.list.chroot build/config/package-lists/custom.list.chroot
+          fi
+
+      - name: Add customization hooks
+        run: |
+          mkdir -p build/config/hooks/live
+          if [ -d config/hooks ]; then
+            cp -a config/hooks/. build/config/hooks/live/
+          fi
+
+      - name: Add custom files
+        run: |
+          if [ -d config/includes.chroot ]; then
+            mkdir -p build/config/includes.chroot
+            cp -a config/includes.chroot/. build/config/includes.chroot/
+          fi
+
+      - name: Build ISO
+        working-directory: build
+        run: |
+          sudo lb build
+
+      - name: Rename ISO
+        run: |
+          ISO=$(find build -maxdepth 1 -type f -name '*.iso' -print -quit)
+          test -n "$ISO"
+          cp "$ISO" "${ISO_NAME}.iso"
+          sha256sum "${ISO_NAME}.iso" > "${ISO_NAME}.iso.sha256"
+          ls -lh "${ISO_NAME}.iso" "${ISO_NAME}.iso.sha256"
+
+      - name: Upload ISO artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ISO_NAME }}
+          path: |
+            ${{ env.ISO_NAME }}.iso
+            ${{ env.ISO_NAME }}.iso.sha256
+          if-no-files-found: error
+          retention-days: 14
